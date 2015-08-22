@@ -59,7 +59,6 @@
 ;; Output generation
 (defn rand-range [range]
   (Math/round (* range (rand))))
-(seq {:a 1 :b 2})
 
 (defn pick-weighted [choice weighted-options]
   (let [[option weight] (first weighted-options)]
@@ -78,7 +77,6 @@
 (defn token-seq [last-token chain]
   (cons last-token (lazy-seq (token-seq (next-token last-token chain) chain))))
 
-(take 20 (token-seq :start example-chain))
 (defn format-tokens [tokens]
   (if (empty? tokens)
     '()
