@@ -86,7 +86,7 @@
        (nil? snd) (if (= fst :start) '() (list fst))
        (= fst :start) (format-tokens (cons (str/capitalize snd) (drop 2 tokens)))
        (= snd :end) (cons (.concat fst ".") (format-tokens (drop 2 tokens)))
-       :else (cons format (fst-tokens (rest tokens)))))))
+       :else (cons fst (format-tokens (rest tokens)))))))
 
 (defn render [tokens]
   (str/join " " (format-tokens tokens)))
