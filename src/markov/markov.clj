@@ -8,11 +8,27 @@
 (defn add-pair [from to chain]
   (update-in chain [from to] (fnil inc 0)))
 
-(defn add-tokens [tokens chain]
-  (let [[from to] tokens]
-    (if to
-      (add-tokens (rest tokens) (add-pair from to chain))
-      chain)))
+(defn heads [items]
+  "Return a sequence of lists of heads (e.g. (0) (0 1) (0 1 2)...)."
+  (if (empty? items)
+    []
+    (let [head (first items)]
+      (cons (list head)
+            (lazy-seq (map (partial cons head) (heads (rest items))))))))
+
+(defn groupings [size items]
+  (if (empty? items)
+    (list)
+    (lazy-cat
+     (rest (take size (heads items)))
+     (groupings size (rest items)))))
+
+(defn add-tokens [window-size tokens chain]
+  (reduce
+   (fn [chain grouping]
+     (add-pair (drop-last grouping) (last grouping) chain))
+   chain
+   (groupings window-size tokens)))
 
 (defn last-char [s]
   (.charAt s (dec (.length s))))
@@ -49,12 +65,16 @@
 (defn words-to-tokens [words]
   (start-sentance words))
 
-(defn tokens-to-chain [tokens]
-  (add-tokens tokens empty-chain))
+(defn tokens-to-chain [tokens window-size]
+  (add-tokens window-size tokens empty-chain))
 
-(def s-to-chain (comp tokens-to-chain words-to-tokens s-to-words))
+(defn s-to-chain [window-size s]
+  (-> s
+      s-to-words
+      words-to-tokens
+      (tokens-to-chain window-size)))
 
-(def example-chain (s-to-chain "I do not like eggs in the file. I do not like them in any style. I will not take them fried or boiled. I will not take them poached or broiled. I will not take them soft or scrambled, Despite an argument well-rambled. No fan I am of the egg at hand."))
+(def example-chain (s-to-chain 3 "I do not like eggs in the file. I do not like them in any style. I will not take them fried or boiled. I will not take them poached or broiled. I will not take them soft or scrambled, Despite an argument well-rambled. No fan I am of the egg at hand."))
 
 ;; Output generation
 (defn rand-range [range]
@@ -72,7 +92,7 @@
     (pick-weighted choice (seq weighted-options))))
 
 (defn next-token [last-token chain]
-  (rand-choice (chain last-token)))
+  (rand-choice (chain (list last-token))))
 
 (defn token-seq [last-token chain]
   (cons last-token (lazy-seq (token-seq (next-token last-token chain) chain))))
@@ -84,7 +104,8 @@
           snd (second tokens)]
       (cond
        (nil? snd) (if (= fst :start) '() (list fst))
-       (= fst :start) (format-tokens (cons (str/capitalize snd) (drop 2 tokens)))
+       (= fst :start) (format-tokens
+                       (cons (str/capitalize snd) (drop 2 tokens)))
        (= snd :end) (cons (.concat fst ".") (format-tokens (drop 2 tokens)))
        :else (cons fst (format-tokens (rest tokens)))))))
 

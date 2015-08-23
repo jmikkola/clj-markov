@@ -3,7 +3,9 @@
 
 (require '[markov.markov :as m])
 
-(defn -main
-  "I don't do a whole lot ... yet."
-  [& args]
+(defn -main [& args]
   (println (m/render-n-words 50 m/example-chain)))
+
+(defn words-in-file [filename]
+  (with-open [file (clojure.java.io/reader filename)]
+    (re-seq #"/s+" file)))
