@@ -115,7 +115,7 @@
        tails
        (map chain)
        (remove nil?)
-       first))
+       (apply merge-with +)))
 
 (defn next-token [recent-tokens chain]
   (rand-choice (next-options recent-tokens chain)))
