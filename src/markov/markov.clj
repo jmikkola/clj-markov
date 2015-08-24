@@ -61,7 +61,7 @@
   (if-let [first-word (first words)]
     (if (period? first-word)
       (start-sentance (rest words))
-      (cons :start (read-sentance words)))
+      (cons :start (lazy-seq (read-sentance words))))
     '()))
 
 (defn clean-word [word]
@@ -71,8 +71,9 @@
   "handles tokens when a sentance has already started"
   (if-let [first-word (first words)]
     (if (ends-sent? first-word)
-      (cons (clean-word first-word) (cons :end (start-sentance (rest words))))
-      (cons first-word (read-sentance (rest words))))
+      (cons (clean-word first-word)
+            (cons :end (lazy-seq (start-sentance (rest words)))))
+      (cons first-word (lazy-seq (read-sentance (rest words)))))
     '(:end)))
 
 (defn words-to-tokens [words]
