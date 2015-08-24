@@ -17,6 +17,7 @@
             (lazy-seq (map (partial cons head) (heads (rest items))))))))
 
 (defn tails [items]
+  "Returns a list of tail lists, E.G. (0 1 2) (1 2) (2)."
   (if (empty? items)
     '()
     (cons items (tails (rest items)))))
@@ -72,6 +73,11 @@
 
 (defn tokens-to-chain [tokens window-size]
   (add-tokens window-size tokens empty-chain))
+
+(defn words-to-chain [window-size words]
+  (-> words
+       words-to-tokens
+       (tokens-to-chain window-size)))
 
 (defn s-to-chain [window-size s]
   (-> s
