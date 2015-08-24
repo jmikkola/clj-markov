@@ -33,8 +33,8 @@
   (m/combine-chains (map #(file-to-chain window-size %) filenames)))
 
 (defn handle-file [filenames]
-  (let [window-size 3
-        n-words 200]
+  (let [window-size 4
+        n-words 1000]
     (->> filenames
          (files-to-chain window-size)
          (run-chain n-words window-size))))
