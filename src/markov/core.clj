@@ -29,14 +29,17 @@
   (with-words-in-file filename
     #(m/words-to-chain window-size %)))
 
-(defn handle-file [filename]
+(defn files-to-chain [window-size filenames]
+  (m/combine-chains (map #(file-to-chain window-size %) filenames)))
+
+(defn handle-file [filenames]
   (let [window-size 3
         n-words 200]
-    (->> filename
-         (file-to-chain window-size)
+    (->> filenames
+         (files-to-chain window-size)
          (run-chain n-words window-size))))
 
 (defn -main [& args]
   (if (empty? args)
     (print-demo)
-    (handle-file (first args))))
+    (handle-file args)))

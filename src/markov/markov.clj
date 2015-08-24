@@ -5,6 +5,13 @@
 ;; Chain building
 (def empty-chain {:end {:start 1}})
 
+(defn merge-options [left right]
+  (merge-with + left right))
+
+(defn combine-chains [chains]
+  "Merges two chains into a larger chain"
+  (apply merge-with merge-options chains))
+
 (defn add-pair [from to chain]
   (update-in chain [from to] (fnil inc 0)))
 
