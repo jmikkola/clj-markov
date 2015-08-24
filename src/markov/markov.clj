@@ -16,6 +16,11 @@
       (cons (list head)
             (lazy-seq (map (partial cons head) (heads (rest items))))))))
 
+(defn tails [items]
+  (if (empty? items)
+    '()
+    (cons items (tails (rest items)))))
+
 (defn groupings [size items]
   (if (empty? items)
     (list)
@@ -91,11 +96,26 @@
         choice (rand-range (dec weight))]
     (pick-weighted choice (seq weighted-options))))
 
-(defn next-token [last-token chain]
-  (rand-choice (chain (list last-token))))
+(defn next-options [recent-tokens chain]
+  (->> recent-tokens
+       tails
+       (map chain)
+       (remove nil?)
+       first))
 
-(defn token-seq [last-token chain]
-  (cons last-token (lazy-seq (token-seq (next-token last-token chain) chain))))
+(defn next-token [recent-tokens chain]
+  (rand-choice (next-options recent-tokens chain)))
+
+(defn add-recent [token recent-tokens window-size]
+  (let [tokens (conj recent-tokens token)]
+    (if (> (count tokens) window-size)
+      (subvec tokens 1)
+      tokens)))
+
+(defn token-seq [recent-tokens window-size chain]
+  (let [token (next-token recent-tokens chain)
+        recent-tokens' (add-recent token recent-tokens window-size)]
+    (cons token (lazy-seq (token-seq recent-tokens' window-size chain)))))
 
 (defn format-tokens [tokens]
   (if (empty? tokens)
@@ -112,5 +132,8 @@
 (defn render [tokens]
   (str/join " " (format-tokens tokens)))
 
-(defn render-n-words [n chain]
-  (render (take n (token-seq :start chain))))
+(defn tokens [window-size chain]
+  (cons :start (token-seq [:start] window-size chain)))
+
+(defn render-n-words [n window-size chain]
+  (render (take n (tokens window-size chain))))
