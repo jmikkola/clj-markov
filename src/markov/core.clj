@@ -22,14 +22,16 @@
   (with-open [file (clojure.java.io/reader filename)]
     (f (lazy-cat-map split-words (line-seq file)))))
 
+(defn run-chain [n-words window-size chain]
+  (println (m/render-n-words n-words window-size chain)))
+
 (defn handle-file [filename]
   (let [window-size 3
         n-words 200]
     (with-words-in-file filename
       (fn [words] (->> words
                        (m/words-to-chain window-size)
-                       (m/render-n-words n-words window-size)
-                       println)))))
+                       (run-chain n-words window-size))))))
 
 (defn -main [& args]
   (if (empty? args)
